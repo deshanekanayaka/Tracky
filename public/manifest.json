@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Tracky",
+  "version": "1.0.0",
+  "description": "Auto-log job applications to your own Google Sheet.",
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "identity",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://www.indeed.com/*",
+    "https://www.glassdoor.com/*",
+    "https://*.lever.co/*",
+    "https://*.greenhouse.io/*",
+    "https://sheets.googleapis.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/jobs/*",
+        "https://www.indeed.com/viewjob*",
+        "https://www.glassdoor.com/job-listing/*",
+        "https://*.lever.co/*",
+        "https://*.greenhouse.io/jobs/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+
+  "commands": {
+    "log-current-tab": {
+      "suggested_key": { "default": "Ctrl+Shift+L", "mac": "Command+Shift+L" },
+      "description": "Log current job page"
+    }
+  },
+
+  "oauth2": {
+    "client_id": "REPLACE_AFTER_PHASE_3.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+  },
+
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
+}
