@@ -56,7 +56,7 @@
   },
 
   "oauth2": {
-    "client_id": "REPLACE_AFTER_PHASE_3.apps.googleusercontent.com",
+    "client_id": "230436038221-d8f74lvh4nu8f1rrqj7t5oltd4ci53a8.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
   },
 

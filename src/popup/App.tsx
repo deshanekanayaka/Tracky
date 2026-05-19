@@ -10,7 +10,6 @@ export default function App() {
 
     useEffect(() => {
         if (typeof chrome === 'undefined' || !chrome.storage) return
-
         getConfig().then((config) => {
             if (config.isConnected) hydrate(config)
         })
