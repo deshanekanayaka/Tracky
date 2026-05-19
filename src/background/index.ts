@@ -30,18 +30,41 @@ interface QueueEntry {
   queuedAt: string
 }
 
+// Serialize any read-modify-write operations on the persisted queue.
+let queueLock: Promise<void> = Promise.resolve()
+async function withQueueLock<T>(fn: () => Promise<T> | T): Promise<T> {
+  const prev = queueLock
+  let release!: () => void
+  queueLock = new Promise<void>((resolve) => (release = resolve))
+  await prev
+  try {
+    return await fn()
+  } finally {
+    release()
+  }
+}
+
 async function addToQueue(job: JobEntry): Promise<void> {
-  const queue = await getQueue<QueueEntry>()
-  queue.push({ job, attempts: 0, queuedAt: new Date().toISOString() })
-  await saveQueue(queue)
+  await withQueueLock(async () => {
+    const queue = await getQueue<QueueEntry>()
+    queue.push({ job, attempts: 0, queuedAt: new Date().toISOString() })
+    await saveQueue(queue)
+  })
 }
 
 async function flushQueue(): Promise<void> {
-  const queue = await getQueue<QueueEntry>()
-  if (queue.length === 0) return
-  console.log(`[Tracky] flushing ${queue.length} queued jobs`)
+  // Step 1: Atomically take ownership of the current queue by swapping it out with an empty list.
+  const snapshot = await withQueueLock(async () => {
+    const current = await getQueue<QueueEntry>()
+    if (current.length === 0) return [] as QueueEntry[]
+    await saveQueue<QueueEntry>([])
+    return current
+  })
+  if (snapshot.length === 0) return
+
+  console.log(`[Tracky] flushing ${snapshot.length} queued jobs`)
   const failed: QueueEntry[] = []
-  for (const entry of queue) {
+  for (const entry of snapshot) {
     try {
       const result = await logJobToSheet(entry.job)
       if (!result.success && result.reason !== 'duplicate') {
@@ -51,8 +74,15 @@ async function flushQueue(): Promise<void> {
       failed.push({ ...entry, attempts: entry.attempts + 1 })
     }
   }
-  await saveQueue(failed)
-  console.log(`[Tracky] flush done — ${failed.length} remaining`)
+
+  // Step 2: Merge any newly queued entries (that may have been added while we were processing)
+  // with the failed ones and persist atomically.
+  await withQueueLock(async () => {
+    const pending = await getQueue<QueueEntry>()
+    const merged = [...failed, ...pending]
+    await saveQueue(merged)
+    console.log(`[Tracky] flush done — ${merged.length} remaining`)
+  })
 }
 
 async function logJobToSheet(job: JobEntry): Promise<ExtensionResponse> {

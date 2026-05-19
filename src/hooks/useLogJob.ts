@@ -57,15 +57,17 @@ export default function useLogJob(job: JobEntry | null) {
         chrome.runtime.sendMessage(
             { type: 'LOG_JOB', payload: jobToLog },
             (res: ExtensionResponse | undefined) => {
-                if (!res) { setLogState('done'); return }
+                if (!res) { setLogState('idle'); return }
                 if (res.success) {
                     setLogState(isPartial ? 'partial' : 'done')
                 } else if (res.reason === 'duplicate') {
                     setLogState('duplicate')
                 } else if (res.reason === 'queued') {
                     setLogState('queued')
+                } else if (res.reason === 'not_connected' || res.reason === 'error') {
+                    setLogState('idle')
                 } else {
-                    setLogState('done')
+                    setLogState('idle')
                 }
             }
         )
