@@ -21,6 +21,13 @@ export default defineConfig({
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
+        // Prevent code splitting for background and content scripts
+        manualChunks: (id) => {
+          if (id.includes('src/background')) return 'background'
+          if (id.includes('src/content')) return 'content'
+          if (id.includes('src/utils/sheetsApi')) return 'background'
+          if (id.includes('src/utils/storage') && !id.includes('popup')) return 'background'
+        },
       },
     },
   },

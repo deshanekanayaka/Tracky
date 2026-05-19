@@ -99,34 +99,62 @@ export default function MainPopup() {
           <JobCard job={job} />
         </div>
 
-        {/* Log manually */}
-        <button
-          onClick={handleLog}
-          disabled={!job || logState !== 'idle'}
-          style={{
-            width: '100%',
-            height: 40,
-            borderRadius: 12,
-            fontSize: 13,
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            transition: 'all 0.15s',
-            border: logState === 'done' ? '1px solid #bbf7d0' : logState === 'duplicate' ? '1px solid #fcd34d' : '1px solid #B5D4F4',
-            backgroundColor: logState === 'done' ? '#f0fdf4' : logState === 'duplicate' ? '#fffbeb' : '#ffffff',
-            color: logState === 'done' ? '#16a34a' : logState === 'duplicate' ? '#92400e' : '#185FA5',
-            cursor: !job || logState !== 'idle' ? 'default' : 'pointer',
-          }}
-        >
-          <i
-            className={`ti ${logState === 'done' ? 'ti-check' : logState === 'duplicate' ? 'ti-alert-triangle' : 'ti-table-down'}`}
-            style={{ fontSize: 14 }}
-            aria-hidden="true"
-          />
-          {logState === 'done' ? 'Logged successfully' : logState === 'duplicate' ? 'Already in your sheet' : logState === 'loading' ? 'Logging…' : 'Log manually'}
-        </button>
+          {/* Log manually */}
+          <button
+              onClick={handleLog}
+              disabled={logState !== 'idle'}
+              style={{
+                  width: '100%',
+                  height: 40,
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.15s',
+                  border:
+                      logState === 'done' ? '1px solid #bbf7d0' :
+                          logState === 'partial' ? '1px solid #fed7aa' :
+                              logState === 'duplicate' ? '1px solid #fcd34d' :
+                                  logState === 'queued' ? '1px solid #e5e7eb' :
+                                      '1px solid #B5D4F4',
+                  backgroundColor:
+                      logState === 'done' ? '#f0fdf4' :
+                          logState === 'partial' ? '#fff7ed' :
+                              logState === 'duplicate' ? '#fffbeb' :
+                                  logState === 'queued' ? '#f9fafb' :
+                                      '#ffffff',
+                  color:
+                      logState === 'done' ? '#16a34a' :
+                          logState === 'partial' ? '#c2410c' :
+                              logState === 'duplicate' ? '#92400e' :
+                                  logState === 'queued' ? '#6b7280' :
+                                      '#185FA5',
+                  cursor: logState !== 'idle' ? 'default' : 'pointer',
+                  opacity: logState === 'loading' ? 0.7 : 1,
+              }}
+          >
+              <i
+                  className={`ti ${
+                      logState === 'done' ? 'ti-check' :
+                          logState === 'partial' ? 'ti-alert-triangle' :
+                              logState === 'duplicate' ? 'ti-alert-triangle' :
+                                  logState === 'queued' ? 'ti-cloud-upload' :
+                                      'ti-table-down'
+                  }`}
+                  style={{ fontSize: 14 }}
+                  aria-hidden="true"
+              />
+              {logState === 'done' ? 'Logged successfully' :
+                  logState === 'partial' ? 'Logged with partial data — edit in sheet' :
+                      logState === 'duplicate' ? 'Already in your sheet' :
+                          logState === 'queued' ? 'Queued — will sync when online' :
+                              logState === 'loading' ? 'Logging…' :
+                                  'Log manually'}
+          </button>
+
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
